@@ -3330,8 +3330,37 @@ def policy_metadata():
     return jsonify({"id": policy["id"], "version": policy["version"], "status": policy["status"], "notice": policy["notice"], "source_count": len(policy["sources"])})
 
 
+@app.post("/api/assignments/<assignment_id>/analyze")
+@login_required
+def analyze_assignment(assignment_id):
+    user = current_user()
+    with db() as connection:
+        assignment = assignment_row(connection, assignment_id)
+        if not can_access_assignment(connection, assignment, user):
+            abort(403)
+        
+        data = request.get_json(silent=True) or {}
+        job_description = data.get("job_description") or data.get("query") or assignment["known_scope"]
+        
+        if not job_description or not job_description.strip():
+            return jsonify({"success": False, "error": "Job description is missing", "code": "VALIDATION_ERROR"}), 400
+            
+        from retriever import Retriever
+        from compliance_agent import ComplianceAgent
+        
+        retriever = Retriever()
+        agent = ComplianceAgent(retriever)
+        
+        result = agent.analyze(job_description)
+        if not result.get("success"):
+            return jsonify(result), 400
+            
+        return jsonify(result)
+
+
 init_db()
 
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=int(os.environ.get("PORT", "5000")), debug=False)
+
