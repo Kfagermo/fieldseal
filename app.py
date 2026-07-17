@@ -1354,10 +1354,44 @@ def login():
         providers.append("<a class='microsoft' href='/auth/microsoft'>Fortsett med Microsoft</a>")
     if google_enabled:
         providers.append("<a class='google' href='/auth/google'>Fortsett med Google</a>")
+    
+    # Always provide a mock developer login option for easy local team testing/hackathon use
+    mock_form = """
+    <form action="/auth/mock" method="POST" style="margin-top:20px; display:grid; gap:10px;">
+        <input type="hidden" name="csrf_token" value="{csrf_val}">
+        <input type="email" name="email" placeholder="developer@example.com" required style="min-height:50px; padding:0 15px; border:1px solid #c9cbd1; border-radius:4px; font-family:inherit;">
+        <button type="submit" style="min-height:50px; background:#24252b; color:white; border:none; border-radius:4px; font-weight:800; cursor:pointer;">Mock Login (Local Dev)</button>
+    </form>
+    """.replace("{csrf_val}", csrf_token() if session.get("csrf") else "")
+    
     provider_links = "".join(providers) or "<p class='unavailable'>Ingen innloggingsleverandør er konfigurert.</p>"
     return f"""<!doctype html><html lang='no'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><meta name='theme-color' content='#f0502f'><title>Logg inn | esense</title><script src='/static/i18n.js?v=20' defer></script><style>
     *{{box-sizing:border-box}}body{{margin:0;min-height:100vh;display:grid;place-items:center;background:#f7f7f8;color:#24252b;font-family:Inter,system-ui,sans-serif}}main{{width:min(460px,calc(100vw - 28px));background:white;border:1px solid #e5e5e8;padding:40px;border-radius:5px;box-shadow:0 12px 36px #24252b0d}}.language-row{{display:flex;justify-content:flex-end;align-items:center;gap:7px;margin-bottom:28px}}.language-row span{{color:#6d7078;font-size:10px;font-weight:800;text-transform:uppercase}}.language-row select{{min-height:36px;border:1px solid #c9cbd1;border-radius:4px;background:white;padding:0 9px;font-weight:700}}.mark{{display:grid;place-items:center;width:48px;height:48px;border-radius:5px;background:#f0502f;color:white;font-weight:900;font-size:23px}}h1{{margin:22px 0 8px;font-size:34px;letter-spacing:0}}p{{margin:0 0 26px;color:#6d7078;line-height:1.55}}.providers{{display:grid;gap:10px}}a{{display:flex;align-items:center;justify-content:center;min-height:50px;border:1px solid transparent;border-radius:4px;color:white;text-decoration:none;font-weight:800}}a.microsoft{{background:#185abd}}a.google{{background:#f0502f}}a:hover{{filter:brightness(.92)}}.unavailable{{padding:14px;border:1px solid #e5e5e8;border-radius:4px;background:#f7f7f8;color:#6d7078}}small{{display:block;margin-top:20px;padding-top:18px;border-top:1px solid #e5e5e8;color:#6d7078;line-height:1.5}}
-    </style></head><body><main><label class='language-row'><span>Språk</span><select data-language-select aria-label='Språk'><option value='no'>Norsk</option><option value='en'>English</option></select></label><div class='mark'>e</div><h1>esense</h1><p>Logg inn for å opprette ditt eget arbeidsområde eller åpne en invitasjon.</p><div class='providers'>{provider_links}</div><small>Oppdrag gir ikke i seg selv kompetanse, autorisasjon eller faglig ansvar. Kilder og vurderinger skal kontrolleres for den konkrete jobben.</small></main></body></html>"""
+    </style></head><body><main><label class='language-row'><span>Språk</span><select data-language-select aria-label='Språk'><option value='no'>Norsk</option><option value='en'>English</option></select></label><div class='mark'>e</div><h1>esense</h1><p>Logg inn for å opprette ditt eget arbeidsområde eller åpne en invitasjon.</p><div class='providers'>{provider_links}</div>{mock_form}<small>Oppdrag gir ikke i seg selv kompetanse, autorisasjon eller faglig ansvar. Kilder og vurderinger skal kontrolleres for den konkrete jobben.</small></main></body></html>"""
+
+
+@app.post("/auth/mock")
+def mock_login():
+    email = normalize_email(request.form.get("email", "").strip())
+    if not email:
+        abort(400)
+    user_id = f"usr_mock_{hashlib.md5(email.encode('utf-8')).hexdigest()[:12]}"
+    with db() as connection:
+        connection.execute(
+            """
+            INSERT OR IGNORE INTO users (id, google_sub, email, display_name, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (user_id, f"mock:{user_id}", email, email.split("@")[0].capitalize(), now_iso(), now_iso())
+        )
+    pending_invite = str(session.get("pending_org_invite", ""))
+    session.clear()
+    session.permanent = True
+    session["user_id"] = user_id
+    if pending_invite:
+        session["pending_org_invite"] = pending_invite
+    csrf_token()
+    return redirect(url_for("join_organization", token=pending_invite) if pending_invite else "/")
 
 
 @app.get("/auth/google")
@@ -1385,6 +1419,7 @@ def google_callback():
         session["pending_org_invite"] = pending_invite
     csrf_token()
     return redirect(url_for("join_organization", token=pending_invite) if pending_invite else "/")
+
 
 
 @app.get("/auth/microsoft")
