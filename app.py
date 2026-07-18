@@ -119,7 +119,6 @@ def load_env(path: Path) -> None:
 
 
 load_env(BASE_DIR / ".env")
-DATA_DIR.mkdir(parents=True, exist_ok=True)
 EVIDENCE_DIR.mkdir(parents=True, exist_ok=True)
 
 app = Flask(__name__, static_folder=str(STATIC_DIR), static_url_path="/static")
@@ -1518,7 +1517,7 @@ def service_worker():
 def health():
     with db() as connection:
         connection.execute("SELECT 1").fetchone()
-    return jsonify({"status": "ok", "service": "esense", "generation": "documentation-and-assurance"})
+    return jsonify({"status": "ok"})
 
 
 @app.get("/api/public/midnight-demo")
