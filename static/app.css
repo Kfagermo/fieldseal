@@ -755,3 +755,96 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); box-sha
     flex-direction: column;
   }
 }
+
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+}
+.theme-toggle span { font-size: 14px; line-height: 1; }
+.theme-toggle strong { font-size: 11px; }
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #f7f8f8;
+  --muted: #a8b0bd;
+  --line: rgba(255,255,255,.09);
+  --line-strong: rgba(255,255,255,.17);
+  --canvas: #08090a;
+  --surface: #101113;
+  --surface-alt: #181a1d;
+  --accent: #7170ff;
+  --accent-hover: #9da5ff;
+  --accent-soft: rgba(113,112,255,.16);
+  --green: #50d18d;
+  --green-2: #62dfa1;
+  --green-soft: rgba(39,166,68,.16);
+  --blue: #8bbcff;
+  --blue-soft: rgba(71,137,214,.18);
+  --amber: #f0bb63;
+  --amber-soft: rgba(240,187,99,.16);
+  --red: #ff8a7d;
+  --red-soft: rgba(255,92,92,.15);
+  --shadow: 0 18px 42px rgba(0,0,0,.36);
+}
+
+:root[data-theme="dark"] .topbar { background: rgba(8,9,10,.92); backdrop-filter: blur(18px); }
+:root[data-theme="dark"] .sidebar,
+:root[data-theme="dark"] .primary-nav button:hover,
+:root[data-theme="dark"] .primary-nav button.active,
+:root[data-theme="dark"] .sidebar-settings:hover,
+:root[data-theme="dark"] .sidebar-assignment:hover,
+:root[data-theme="dark"] .sidebar-assignment.current { background: #0f1011; }
+:root[data-theme="dark"] .settings-panel,
+:root[data-theme="dark"] .metric,
+:root[data-theme="dark"] .metric-row,
+:root[data-theme="dark"] .assignment-card,
+:root[data-theme="dark"] .filter-row button,
+:root[data-theme="dark"] .data-table-wrap,
+:root[data-theme="dark"] .source-summary > div,
+:root[data-theme="dark"] .assurance-strip > div,
+:root[data-theme="dark"] .readiness-step,
+:root[data-theme="dark"] .document-card,
+:root[data-theme="dark"] .demo-proof-flow section,
+:root[data-theme="dark"] .recipient-entry-flow section,
+:root[data-theme="dark"] .brief-item,
+:root[data-theme="dark"] .dialog-card,
+:root[data-theme="dark"] dialog,
+:root[data-theme="dark"] .secondary,
+:root[data-theme="dark"] .icon-button,
+:root[data-theme="dark"] .theme-toggle,
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea { background: var(--surface); color: var(--ink); }
+:root[data-theme="dark"] .work-section,
+:root[data-theme="dark"] .assignment-description,
+:root[data-theme="dark"] .receipt-facts,
+:root[data-theme="dark"] .recipient-access-facts > div,
+:root[data-theme="dark"] .demo-anchor-facts > div,
+:root[data-theme="dark"] .document-detail-header > div,
+:root[data-theme="dark"] .document-detail-grid section,
+:root[data-theme="dark"] .data-table th { background: var(--surface-alt); }
+:root[data-theme="dark"] .primary-nav button,
+:root[data-theme="dark"] .sidebar-settings,
+:root[data-theme="dark"] .logout-link,
+:root[data-theme="dark"] .notice p,
+:root[data-theme="dark"] .assistant-strip p,
+:root[data-theme="dark"] .document-title p,
+:root[data-theme="dark"] .document-detail p,
+:root[data-theme="dark"] .document-detail li,
+:root[data-theme="dark"] .verification-state p,
+:root[data-theme="dark"] .recipient-access-state p,
+:root[data-theme="dark"] .recipient-demo-note,
+:root[data-theme="dark"] .field label,
+:root[data-theme="dark"] fieldset legend { color: var(--muted); }
+:root[data-theme="dark"] .midnight-network { color: var(--ink); }
+:root[data-theme="dark"] .google-maps-mark { background: var(--surface-alt); }
+:root[data-theme="dark"] button:focus-visible,
+:root[data-theme="dark"] a:focus-visible,
+:root[data-theme="dark"] input:focus-visible,
+:root[data-theme="dark"] select:focus-visible,
+:root[data-theme="dark"] textarea:focus-visible { outline-color: rgba(157,165,255,.5); }

@@ -779,7 +779,7 @@ def upsert_user_identity(provider: str, subject: str, email: str, name: str) -> 
         ).fetchone()
         email_user = connection.execute("SELECT * FROM users WHERE lower(email) = ?", (email,)).fetchone()
         if identity_user and email_user and identity_user["id"] != email_user["id"]:
-            abort(409, "Innloggingsidentiteten og e-postadressen tilhører ulike FieldSeal-brukere")
+            abort(409, "The sign-in identity and email address belong to different FieldSeal users")
         user = identity_user or email_user
         if user:
             user_id = user["id"]
@@ -815,7 +815,7 @@ def json_payload() -> dict:
         abort(413)
     value = request.get_json(silent=True)
     if not isinstance(value, dict):
-        abort(400, "Forespørselen må inneholde et JSON-objekt")
+        abort(400, "The request must contain a JSON object")
     return value
 
 
@@ -1319,7 +1319,7 @@ def protect_api() -> None:
         expected = str(session.get("csrf", ""))
         supplied = str(request.headers.get("X-CSRF-Token", ""))
         if not expected or not hmac.compare_digest(expected, supplied):
-            abort(403, "Ugyldig sikkerhetskode for forespørselen")
+            abort(403, "Invalid request security code")
 
 
 @app.after_request
@@ -1351,13 +1351,13 @@ def login():
         return redirect(url_for("join_organization", token=pending_invite) if pending_invite else "/")
     providers = []
     if microsoft_enabled:
-        providers.append("<a class='microsoft' href='/auth/microsoft'>Fortsett med Microsoft</a>")
+        providers.append("<a class='microsoft' href='/auth/microsoft'>Continue with Microsoft</a>")
     if google_enabled:
-        providers.append("<a class='google' href='/auth/google'>Fortsett med Google</a>")
-    provider_links = "".join(providers) or "<p class='unavailable'>Ingen innloggingsleverandør er konfigurert.</p>"
-    return f"""<!doctype html><html lang='no'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><meta name='theme-color' content='#f0502f'><title>Logg inn | FieldSeal</title><script src='/static/i18n.js?v=22' defer></script><style>
+        providers.append("<a class='google' href='/auth/google'>Continue with Google</a>")
+    provider_links = "".join(providers) or "<p class='unavailable'>No sign-in provider is configured.</p>"
+    return f"""<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><meta name='theme-color' content='#f7f8f8'><title>Sign in | FieldSeal</title><script src='/static/i18n.js?v=23' defer></script><style>
     *{{box-sizing:border-box}}body{{margin:0;min-height:100vh;display:grid;place-items:center;background:#f7f7f8;color:#24252b;font-family:Inter,system-ui,sans-serif}}main{{width:min(460px,calc(100vw - 28px));background:white;border:1px solid #e5e5e8;padding:40px;border-radius:5px;box-shadow:0 12px 36px #24252b0d}}.language-row{{display:flex;justify-content:flex-end;align-items:center;gap:7px;margin-bottom:28px}}.language-row span{{color:#6d7078;font-size:10px;font-weight:800;text-transform:uppercase}}.language-row select{{min-height:36px;border:1px solid #c9cbd1;border-radius:4px;background:white;padding:0 9px;font-weight:700}}.mark{{display:grid;place-items:center;width:48px;height:48px;border-radius:5px;background:#f0502f;color:white;font-weight:900;font-size:23px}}h1{{margin:22px 0 8px;font-size:34px;letter-spacing:0}}p{{margin:0 0 26px;color:#6d7078;line-height:1.55}}.providers{{display:grid;gap:10px}}a{{display:flex;align-items:center;justify-content:center;min-height:50px;border:1px solid transparent;border-radius:4px;color:white;text-decoration:none;font-weight:800}}a.microsoft{{background:#185abd}}a.google{{background:#f0502f}}a:hover{{filter:brightness(.92)}}.unavailable{{padding:14px;border:1px solid #e5e5e8;border-radius:4px;background:#f7f7f8;color:#6d7078}}small{{display:block;margin-top:20px;padding-top:18px;border-top:1px solid #e5e5e8;color:#6d7078;line-height:1.5}}
-    </style></head><body><main><label class='language-row'><span>Språk</span><select data-language-select aria-label='Språk'><option value='no'>Norsk</option><option value='en'>English</option></select></label><div class='mark'>F</div><h1>FieldSeal</h1><p>Logg inn for å opprette ditt eget arbeidsområde eller åpne en invitasjon.</p><div class='providers'>{provider_links}</div><small>Oppdrag gir ikke i seg selv kompetanse, autorisasjon eller faglig ansvar. Kilder og vurderinger skal kontrolleres for den konkrete jobben.</small></main></body></html>"""
+    </style></head><body><main><div class='mark'>F</div><h1>FieldSeal</h1><p>Sign in to create your workspace or open an invitation.</p><div class='providers'>{provider_links}</div><small>Assignments do not grant competence, authorization, or professional responsibility. Sources and judgments must be checked for the specific job.</small></main></body></html>"""
 
 
 @app.get("/auth/google")
@@ -1390,19 +1390,19 @@ def google_callback():
 @app.get("/auth/microsoft")
 def microsoft_start():
     if not microsoft_enabled:
-        abort(503, "Microsoft-pålogging er ikke konfigurert")
+        abort(503, "Microsoft sign-in is not configured")
     return oauth.microsoft.authorize_redirect(url_for("microsoft_callback", _external=True, _scheme="https"))
 
 
 @app.get("/auth/microsoft/callback")
 def microsoft_callback():
     if not microsoft_enabled:
-        abort(503, "Microsoft-pålogging er ikke konfigurert")
+        abort(503, "Microsoft sign-in is not configured")
     token = oauth.microsoft.authorize_access_token()
     info = token.get("userinfo") or oauth.microsoft.parse_id_token(token)
     identity = microsoft_identity_from_claims(dict(info or {}))
     if not identity:
-        abort(403, "Microsoft-kontoen tilhører ikke den konfigurerte skoleorganisasjonen")
+        abort(403, "The Microsoft account does not belong to the configured school organization")
     user_id = upsert_user_identity("microsoft", identity["subject"], identity["email"], identity["name"])
     pending_invite = str(session.get("pending_org_invite", ""))
     session.clear()
@@ -1436,7 +1436,7 @@ def join_organization(token: str):
         if not link:
             abort(404)
         if link["status"] != "active" or timestamp_expired(link["expires_at"]):
-            abort(410, "Invitasjonslenken er utløpt eller trukket tilbake")
+            abort(410, "The invitation link has expired or been revoked")
         user = current_user()
         if not user:
             session["pending_org_invite"] = token
@@ -1481,9 +1481,9 @@ def join_organization(token: str):
     user_name = html.escape(str(user["display_name"] or user["email"]))
     csrf = html.escape(csrf_token(), quote=True)
     expires_at = html.escape(link["expires_at"][:10])
-    return f"""<!doctype html><html lang='no'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><meta name='theme-color' content='#f0502f'><title>Bli med | FieldSeal</title><style>
+    return f"""<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><meta name='theme-color' content='#f0502f'><title>Join | FieldSeal</title><style>
     *{{box-sizing:border-box}}body{{margin:0;min-height:100vh;display:grid;place-items:center;background:#f7f7f8;color:#24252b;font-family:Inter,system-ui,sans-serif}}main{{width:min(520px,calc(100vw - 28px));background:white;border:1px solid #e5e5e8;padding:38px;border-radius:5px;box-shadow:0 12px 36px #24252b0d}}.mark{{display:grid;place-items:center;width:46px;height:46px;border-radius:5px;background:#f0502f;color:white;font-size:22px;font-weight:900}}h1{{margin:22px 0 8px;font-size:30px}}p{{color:#6d7078;line-height:1.55}}.facts{{margin:24px 0;border:1px solid #e5e5e8}}.facts div{{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:12px 14px;border-bottom:1px solid #e5e5e8}}.facts div:last-child{{border:0}}.facts span{{color:#6d7078;font-size:12px}}.facts strong{{font-size:13px}}.notice{{border-left:4px solid #255a83;background:#edf4f8;padding:14px;font-size:13px;line-height:1.5}}button{{width:100%;min-height:50px;margin-top:22px;border:0;border-radius:4px;background:#f0502f;color:white;font:inherit;font-weight:800;cursor:pointer}}small{{display:block;margin-top:16px;color:#6d7078;line-height:1.45}}
-    </style></head><body><main><div class='mark'>F</div><h1>Bli med i {organization_name}</h1><p>Du blir først lagt til som medlem. En leder kan senere gi deg riktig rolle og tilgang til arbeidsfunksjoner.</p><div class='facts'><div><span>Organisasjon</span><strong>{organization_name}</strong></div><div><span>Logget inn som</span><strong>{user_name}</strong></div><div><span>Lenken gjelder til</span><strong>{expires_at}</strong></div></div><div class='notice'>Medlemskap gir ikke automatisk tilgang til oppdrag, kundedata eller rapporter. Rapporttilgang deles separat og kan trekkes tilbake.</div><form method='post'><input type='hidden' name='csrf' value='{csrf}'><button type='submit'>Bli med i organisasjonen</button></form><small>Invitasjonen gir ingen faglig godkjenning, kompetanse eller myndighetsrolle.</small></main></body></html>"""
+    </style></head><body><main><div class='mark'>F</div><h1>Join {organization_name}</h1><p>You will first be added as a member. An administrator can later assign the right role and access to work functions.</p><div class='facts'><div><span>Organization</span><strong>{organization_name}</strong></div><div><span>Signed in as</span><strong>{user_name}</strong></div><div><span>Link valid until</span><strong>{expires_at}</strong></div></div><div class='notice'>Membership does not automatically grant access to assignments, customer data, or reports. Report access is shared separately and can be revoked.</div><form method='post'><input type='hidden' name='csrf' value='{csrf}'><button type='submit'>Join organization</button></form><small>This invitation does not grant professional approval, competence, or authority.</small></main></body></html>"""
 
 
 @app.get("/")

@@ -25,12 +25,12 @@ def main() -> None:
         login_page = esense.app.test_client().get("/login")
         assert login_page.status_code == 200
         login_text = login_page.get_data(as_text=True)
-        assert "Fortsett med Microsoft" in login_text
-        assert "Ingen innloggingsleverandør er konfigurert" not in login_text
-        assert "data-language-select" in login_text
+        assert "Continue with Microsoft" in login_text
+        assert "No sign-in provider is configured" not in login_text
+        assert "data-language-select" not in login_text
         assert "<h1>FieldSeal</h1>" in login_text
-        assert "/static/i18n.js?v=22" in login_text
-        i18n_asset = esense.app.test_client().get("/static/i18n.js?v=22")
+        assert "/static/i18n.js?v=23" in login_text
+        i18n_asset = esense.app.test_client().get("/static/i18n.js?v=23")
         assert i18n_asset.status_code == 200
         i18n_text = i18n_asset.get_data(as_text=True)
         assert '"Oppdrag og dokumentasjon": "Assignments and documentation"' in i18n_text
@@ -112,11 +112,11 @@ def main() -> None:
         application_page = provider.get("/")
         assert application_page.status_code == 200
         application_text = application_page.get_data(as_text=True)
-        assert "data-language-select" in application_text
-        assert "/static/app.js?v=39" in application_text
-        assert "/static/app.css?v=32" in application_text
+        assert "data-language-select" not in application_text
+        assert "/static/app.js?v=40" in application_text
+        assert "/static/app.css?v=33" in application_text
         assert application_text.index('id="settingsButton"') < application_text.index('id="syncState"') < application_text.index('class="logout-link"')
-        assert "/static/i18n.js?v=22" in application_text
+        assert "/static/i18n.js?v=23" in application_text
         assert 'id="documentSortFilter"' in application_text
         assert "documentation-demo-link" not in application_text
         assert "Utstedte pakker forblir private" not in application_text
@@ -171,6 +171,7 @@ def main() -> None:
         assert "Administrer organisasjonen og følg opp oppdrag" not in application_text
         assert "Stilling eller fagrolle" in application_text
         assert 'id="topbarAssistant"' in application_text
+        assert 'id="themeToggle"' in application_text
         assert 'class="midnight-network"' in application_text
         assert 'id="inviteQrImage"' in application_text
         assert 'id="memberRoleDialog"' in application_text
@@ -179,14 +180,14 @@ def main() -> None:
         assert '<h1 id="assignmentsTitle">Oppdrag</h1>' in application_text
         assert '<strong>FieldSeal</strong>' in application_text
         assert '<title>FieldSeal | dokumentasjon og oppdrag</title>' in application_text
-        assert "/static/app.js?v=39" in application_text
+        assert "/static/app.js?v=40" in application_text
         manifest_asset = provider.get("/static/manifest.webmanifest")
         assert manifest_asset.status_code == 200
         manifest_payload = esense.json.loads(manifest_asset.get_data(as_text=True))
         assert manifest_payload["name"].startswith("FieldSeal")
         assert manifest_payload["short_name"] == "FieldSeal"
         assert "Kun oppdrag du er tildelt" not in application_text
-        app_asset = provider.get("/static/app.js?v=39")
+        app_asset = provider.get("/static/app.js?v=40")
         assert app_asset.status_code == 200
         app_text = app_asset.get_data(as_text=True)
         assert "function renderSidebarAssignments()" in app_text
@@ -227,7 +228,7 @@ def main() -> None:
         assert 'managerView ? "Oversikt" : reviewerView ? "Til vurdering" : "Mine oppdrag"' in app_text
         assert "FieldSeal demo" in app_text
         assert "helper.dataset.nextAction" in app_text
-        css_asset = provider.get("/static/app.css?v=32")
+        css_asset = provider.get("/static/app.css?v=33")
         assert css_asset.status_code == 200
         css_text = css_asset.get_data(as_text=True)
         assert ".sidebar-assignment.current" in css_text
@@ -305,7 +306,7 @@ def main() -> None:
         joiner = client_for("joiner")
         join_confirmation = joiner.get(f"/join/{join_token}")
         assert join_confirmation.status_code == 200
-        assert "Medlemskap gir ikke automatisk tilgang" in join_confirmation.get_data(as_text=True)
+        assert "Membership does not automatically grant access" in join_confirmation.get_data(as_text=True)
         joined = joiner.post(f"/join/{join_token}", data={"csrf": "csrf-joiner"})
         assert joined.status_code == 302
         members_after_join = provider.get(f"/api/organizations/{organization_id}/members").get_json()["members"]
@@ -735,10 +736,10 @@ def main() -> None:
         service_worker = public_client.get("/sw.js")
         assert service_worker.status_code == 200
         service_worker_text = service_worker.get_data(as_text=True)
-        assert 'const CACHE_NAME = "esense-documentation-v41"' in service_worker_text
+        assert 'const CACHE_NAME = "fieldseal-documentation-v42"' in service_worker_text
         for asset_url in (
-            "/static/i18n.js?v=22",
-            "/static/app.js?v=39",
+            "/static/i18n.js?v=23",
+            "/static/app.js?v=40",
             "/static/midnight-demo.locales.js?v=3",
             "/static/midnight-demo.en.js?v=4",
         ):

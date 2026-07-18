@@ -1,13 +1,23 @@
 <!doctype html>
-<html lang="no">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#f0502f" />
+    <meta name="theme-color" content="#f7f8f8" />
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("fieldseal-theme-v1");
+          var theme = stored === "light" || stored === "dark" ? stored : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+          document.documentElement.dataset.theme = theme;
+          document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#08090a" : "#f7f8f8");
+        } catch (error) { document.documentElement.dataset.theme = "light"; }
+      })();
+    </script>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="FieldSeal" />
     <link rel="manifest" href="/static/manifest.webmanifest" />
-    <link rel="stylesheet" href="/static/app.css?v=32" onerror="this.onerror=null;this.href='./app.css?v=32'" />
+    <link rel="stylesheet" href="/static/app.css?v=33" onerror="this.onerror=null;this.href='./app.css?v=33'" />
     <title>FieldSeal | dokumentasjon og oppdrag</title>
   </head>
   <body>
@@ -20,11 +30,7 @@
         <button class="topbar-helper" id="topbarAssistant" type="button" hidden><span>Neste</span><strong id="topbarAssistantTitle">Ingen utestående handlinger</strong><b aria-hidden="true">›</b></button>
         <div class="top-actions">
           <button class="secondary compact-button onboarding-organization-button" id="createOrganizationTopButton" type="button" hidden>Opprett organisasjon</button>
-          <label class="language-control" for="languageSelect" title="Språk">
-            <svg class="language-symbol" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20M12 2a15.3 15.3 0 0 1 0 20M12 2a15.3 15.3 0 0 0 0 20"></path></svg>
-            <span class="sr-only">Språk</span>
-            <select id="languageSelect" data-language-select aria-label="Språk"><option value="no">Norsk</option><option value="en">English</option></select>
-          </label>
+          <button class="theme-toggle compact-button" id="themeToggle" type="button" aria-label="Switch theme" title="Switch theme"><span aria-hidden="true">◐</span><strong>Theme</strong></button>
           <button class="icon-button" id="profileButton" type="button" title="Profil" aria-label="Åpne profil">?</button>
         </div>
       </header>
@@ -420,8 +426,8 @@
     </dialog>
 
     <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-    <script src="/static/i18n.js?v=22" defer></script>
+    <script src="/static/i18n.js?v=23" defer></script>
     <script src="/static/tooltips.js?v=2" defer></script>
-    <script src="/static/app.js?v=39" defer></script>
+    <script src="/static/app.js?v=40" defer></script>
   </body>
 </html>

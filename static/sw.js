@@ -1,10 +1,10 @@
-const CACHE_NAME = "esense-documentation-v41";
+const CACHE_NAME = "fieldseal-documentation-v42";
 const APP_SHELL = [
   "/static/index.html",
-  "/static/app.css?v=32",
-  "/static/i18n.js?v=22",
+  "/static/app.css?v=33",
+  "/static/i18n.js?v=23",
   "/static/tooltips.js?v=2",
-  "/static/app.js?v=39",
+  "/static/app.js?v=40",
   "/static/manifest.webmanifest",
   "/static/midnight-demo.en.html",
   "/static/midnight-demo.css?v=4",

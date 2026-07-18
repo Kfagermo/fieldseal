@@ -1,3 +1,27 @@
+const THEME_STORAGE_KEY = "fieldseal-theme-v1";
+
+function preferredTheme() {
+  const stored = localStorage.getItem(THEME_STORAGE_KEY);
+  if (stored === "light" || stored === "dark") return stored;
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function applyTheme(theme = preferredTheme(), persist = false) {
+  const normalized = theme === "dark" ? "dark" : "light";
+  document.documentElement.dataset.theme = normalized;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", normalized === "dark" ? "#08090a" : "#f7f8f8");
+  const toggle = document.getElementById("themeToggle");
+  if (toggle) {
+    toggle.setAttribute("aria-label", `Switch to ${normalized === "dark" ? "light" : "dark"} theme`);
+    toggle.title = `Switch to ${normalized === "dark" ? "light" : "dark"} theme`;
+    const label = toggle.querySelector("strong");
+    if (label) label.textContent = normalized === "dark" ? "Dark" : "Light";
+  }
+  if (persist) localStorage.setItem(THEME_STORAGE_KEY, normalized);
+}
+
+applyTheme();
+
 const state = {
   user: null,
   memberships: [],
@@ -1893,6 +1917,10 @@ function bindEvents() {
   byId("editOrganizationButton").addEventListener("click", openOrganizationSettings);
   ["createFirstOrganizationButton", "createOrganizationTopButton"].forEach((id) => byId(id).addEventListener("click", () => byId("organizationDialog").showModal()));
   byId("profileButton").addEventListener("click", () => openSettings("profile"));
+  byId("themeToggle")?.addEventListener("click", () => {
+    const current = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+    applyTheme(current === "dark" ? "light" : "dark", true);
+  });
   byId("organizationForm").addEventListener("submit", createOrganization);
   byId("memberForm").addEventListener("submit", createOrganizationJoinLink);
   byId("memberRoleForm").addEventListener("submit", saveMemberRoles);

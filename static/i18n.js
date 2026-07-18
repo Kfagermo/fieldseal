@@ -1,9 +1,7 @@
 (function () {
-  const STORAGE_KEY = "esense-language-v1";
-  const supported = new Set(["no", "en"]);
   const sourceText = new WeakMap();
   const sourceAttributes = new WeakMap();
-  let language = supported.has(localStorage.getItem(STORAGE_KEY)) ? localStorage.getItem(STORAGE_KEY) : "no";
+  const language = "en";
   let observer;
   let scheduled = false;
 
@@ -944,28 +942,23 @@
   function refreshSelectors() {
     document.querySelectorAll("[data-language-select]").forEach((select) => {
       select.value = language;
+      select.disabled = true;
+      select.closest("label")?.setAttribute("hidden", "");
     });
   }
 
   function applyLanguage() {
-    document.documentElement.lang = language === "en" ? "en" : "no";
+    document.documentElement.lang = "en";
     translateTree(document.documentElement);
     refreshSelectors();
   }
 
-  function setLanguage(next, announce = true) {
-    if (!supported.has(next)) return;
-    language = next;
-    localStorage.setItem(STORAGE_KEY, language);
-    document.cookie = `esense-language=${language}; Path=/; Max-Age=31536000; SameSite=Lax`;
+  function setLanguage() {
     applyLanguage();
-    if (announce) window.dispatchEvent(new CustomEvent("esense:languagechange", { detail: { language } }));
+    window.dispatchEvent(new CustomEvent("esense:languagechange", { detail: { language } }));
   }
 
   function init() {
-    document.querySelectorAll("[data-language-select]").forEach((select) => {
-      select.addEventListener("change", () => setLanguage(select.value));
-    });
     applyLanguage();
     observer = new MutationObserver((records) => {
       records.forEach((record) => record.addedNodes.forEach((node) => translateTree(node)));
