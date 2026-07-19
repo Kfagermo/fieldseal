@@ -28,10 +28,24 @@ The issuer secret remains private client state. It is not stored in the contract
 The Cardano server uses the official Compact installer and compiler. Compile without deploying:
 
 ```bash
-compact compile -- --skip-zk receipt-registry.compact managed/receipt-registry
+cd midnight/pilot
+compact compile --skip-zk ../receipt-registry.compact contracts/managed/receipt-registry
 ```
 
-Remove `--skip-zk` when the full local DApp harness is ready and proving-key generation is required.
+Remove `--skip-zk` when the full local DApp harness is ready and proving-key generation is required:
+
+```bash
+cd midnight/pilot
+compact compile +0.31.1 ../receipt-registry.compact contracts/managed/receipt-registry
+```
+
+A full pinned compile with Compact compiler `0.31.1` generates:
+
+- `compiler/contract-info.json`
+- `contract/index.js`
+- `contract/index.d.ts`
+- `zkir/*.zkir` and `zkir/*.bzkir`
+- `keys/*.prover` and `keys/*.verifier`
 
 The generated `pilot/contracts/managed/` directory is intentionally ignored.
 Generate it before running the TypeScript checks from a fresh checkout:
